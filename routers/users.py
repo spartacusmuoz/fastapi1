@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from database import SessionLocal
-from models import User
-from schemas import UserCreate, UserRead
+from scr.database import SessionLocal
+from scr.models import User
+from scr.schemas import UserCreate, UserRead
 
 router = APIRouter(
     prefix="/users",
@@ -32,3 +32,14 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+# DELETE /users/{user_id}
+@router.delete("/{user_id}", response_model=dict)
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.delete(user)
+    db.commit()
+    return {"message": f"User with id {user_id} deleted successfully"}
