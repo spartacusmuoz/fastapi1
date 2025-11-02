@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from scr.database import Base
 
 class User(Base):
@@ -8,3 +9,15 @@ class User(Base):
     name = Column(String(50))
     age = Column(Integer)
     phone = Column(String(20))
+    
+    addresses = relationship("Address", back_populates="owner")
+
+class Address(Base):
+    __tablename__ = "addresses"
+    
+    id = Column(Integer, primary_key=True, index=True,)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    city = Column(String)
+    street = Column(String)
+    
+    owner = relationship("User", back_populates="addresses")

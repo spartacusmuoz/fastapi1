@@ -43,3 +43,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
     return {"message": f"User with id {user_id} deleted successfully"}
+
+# 🔹 NUOVO: GET /users/oldest
+@router.get("/oldest", response_model=UserRead)
+def get_oldest_user(db: Session = Depends(get_db)):
+    oldest_user = db.query(User).order_by(User.age.desc()).first()
+    if not oldest_user:
+        raise HTTPException(status_code=404, detail="No users found")
+    return oldest_user

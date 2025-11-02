@@ -1,15 +1,18 @@
 from fastapi import FastAPI
 from scr.database import Base, engine
-from routers import users
+from routers import users, address, city   # importa entrambi
 
 # Creazione tabelle se non esistono
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="API FastAPI con Users e Address")
 
-# Includiamo il router
+# Includi tutti i router
 app.include_router(users.router)
+app.include_router(address.router)
+app.include_router(city.router)
 
+# Root dell'API
 @app.get("/")
-def read_root():
-    return {"message": "Benvenuto alla API FastAPI con MySQL/SQLite!"}
+def root():
+    return {"message": "API pronta"}
