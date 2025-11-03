@@ -5,12 +5,22 @@ from typing import List
 from scr.database import SessionLocal
 from scr.models import Address
 from scr.schemas import AddressCreate, AddressRead
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 
 router = APIRouter(
     prefix="/addresses",
     tags=["addresses"]
 )
 
+# 👇 sposta questa funzione PRIMA di create_address()
+def get_location(address_str: str):
+    geolocator = Nominatim(user_agent="my_app")
+    try:
+        return geolocator.geocode(address_str, timeout=10)
+    except GeocoderTimedOut:
+        return None
+    
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -24,7 +34,7 @@ def get_db():
 @router.get("/", response_model=List[AddressRead])
 def get_addresses(db: Session = Depends(get_db)):
     return db.query(Address).all()
-
+"""
 # POST /addresses
 @router.post("/", response_model=AddressRead)
 def create_address(address: AddressCreate, db: Session = Depends(get_db)):
@@ -33,8 +43,11 @@ def create_address(address: AddressCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_address)
     return db_address
+"""
 
+"""
 # DELETE /addresses/{address_id}
+
 @router.delete("/{address_id}", response_model=dict)
 def delete_address(address_id: int, db: Session = Depends(get_db)):
     address = db.query(Address).filter(Address.id == address_id).first()
@@ -44,3 +57,22 @@ def delete_address(address_id: int, db: Session = Depends(get_db)):
     db.delete(address)
     db.commit()
     return {"message": f"Address with id {address_id} deleted successfully"}
+"""
+@router.post("/", response_model=AddressRead)
+def create_address(address: AddressCreate, db: Session = Depends(get_db)):
+    loc = get_location(f"{address.street}, {address.city}")
+
+    if loc:
+        new_address = Address(
+            street=address.street,
+            city=address.city,
+            lat=loc.latitude,
+            lng=loc.longitude,
+            user_id=address.user_id
+        )
+        db.add(new_address)
+        db.commit()
+        db.refresh(new_address)
+        return new_address
+    else:
+        raise HTTPException(status_code=404, detail="Indirizzo non trovato")

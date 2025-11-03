@@ -14,10 +14,12 @@ class UserRead(UserBase):
     model_config = {
         "from_attributes": True  # sostituisce orm_mode=True in Pydantic v2
     }
-    
+
 class AddressBase(BaseModel):
     street: str
     city: str
+    lat: float = 0.0   # default → non serve Optional
+    lng: float = 0.0
     user_id: int  # collega l'address a un User
 
 class AddressCreate(AddressBase):

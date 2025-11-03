@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from scr.database import Base
+from typing import Optional
 
 class User(Base):
     __tablename__ = "users"
@@ -19,5 +20,7 @@ class Address(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     city = Column(String)
     street = Column(String)
+    lat = Column(Float, nullable=True)   # <-- nuova colonna
+    lng = Column(Float, nullable=True)   # <-- nuova colonna
     
     owner = relationship("User", back_populates="addresses")
